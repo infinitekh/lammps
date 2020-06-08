@@ -473,6 +473,9 @@ void EwaldDipoleBigsmall::compute(int eflag, int vflag)
     ek[bigi][0] = ek[bigi][1] = ek[bigi][2] = 0.0;
     tk[bigi][0] = tk[bigi][1] = tk[bigi][2] = 0.0;
 		bigi = bigi +1;
+#ifdef NDEBUG
+		if ( bigi == bign ) break;
+#endif
 	} 
 	assert( bigi == bign );
 
@@ -532,6 +535,9 @@ void EwaldDipoleBigsmall::compute(int eflag, int vflag)
             vatom[i][j] += (ug[k]*mudotk*vg[k][j]*partial_peratom - vcik[j]);
       }
 			bigi = bigi +1;
+#ifdef NDEBUG
+			if ( bigi == bign ) break;
+#endif
 		} 
 		assert( bigi == bign );
   }
@@ -551,6 +557,9 @@ void EwaldDipoleBigsmall::compute(int eflag, int vflag)
     t[i][1] -= muscale * (mu[i][2]*tk[bigi][0] - mu[i][0]*tk[bigi][2]);
     if (slabflag != 2) t[i][2] -= muscale * (mu[i][0]*tk[bigi][1] - mu[i][1]*tk[bigi][0]);
 		bigi = bigi +1;
+#ifdef NDEBUG
+		if ( bigi == bign ) break;
+#endif
 	} 
 	assert( bigi == bign );
 
@@ -591,6 +600,9 @@ void EwaldDipoleBigsmall::compute(int eflag, int vflag)
           *2.0*g3/3.0/MY_PIS;
         eatom[i] *= muscale;
 				bigi = bigi +1;
+#ifdef NDEBUG
+				if ( bigi == bign ) break;
+#endif
 			} 
 			assert( bigi == bign );
     }
@@ -602,6 +614,9 @@ void EwaldDipoleBigsmall::compute(int eflag, int vflag)
 				if (atom->mask[i] & ibiggroupbit)  continue;
 				for (j = 0; j < 6; j++) vatom[i][j] *= muscale;
 				bigi = bigi +1;
+#ifdef NDEBUG
+				if ( bigi == bign ) break;
+#endif
 			} 
 			assert( bigi == bign );
 		}
@@ -662,6 +677,9 @@ void EwaldDipoleBigsmall::eik_dot_r()
         cstr1 += mudotk*cs[1][ic][bigi];
         sstr1 += mudotk*sn[1][ic][bigi];
 				bigi = bigi + 1;
+#ifdef NDEBUG
+				if ( bigi == bign ) break;
+#endif
       } 
 			assert( bigi == bign );
       sfacrl[n] = cstr1;
@@ -691,6 +709,9 @@ void EwaldDipoleBigsmall::eik_dot_r()
           cstr1 += mudotk*cs[m][ic][bigi];
           sstr1 += mudotk*sn[m][ic][bigi];
 					bigi = bigi +1;
+#ifdef NDEBUG
+					if ( bigi == bign ) break;
+#endif
 				} 
 				assert( bigi == bign );
         sfacrl[n] = cstr1;
@@ -726,6 +747,9 @@ void EwaldDipoleBigsmall::eik_dot_r()
           cstr2 += mudotk*(cs[k][0][bigi]*cs[l][1][bigi]+sn[k][0][bigi]*sn[l][1][bigi]);
           sstr2 += mudotk*(sn[k][0][bigi]*cs[l][1][bigi]-cs[k][0][bigi]*sn[l][1][bigi]);
 					bigi = bigi +1;
+#ifdef NDEBUG
+					if ( bigi == bign ) break;
+#endif
 				} 
 				assert( bigi == bign );
         sfacrl[n] = cstr1;
@@ -763,6 +787,9 @@ void EwaldDipoleBigsmall::eik_dot_r()
           cstr2 += mudotk*(cs[l][1][bigi]*cs[m][2][bigi]+sn[l][1][bigi]*sn[m][2][bigi]);
           sstr2 += mudotk*(sn[l][1][bigi]*cs[m][2][bigi]-cs[l][1][bigi]*sn[m][2][bigi]);
 					bigi = bigi +1;
+#ifdef NDEBUG
+					if ( bigi == bign ) break;
+#endif
 				} 
 				assert( bigi == bign );
         sfacrl[n] = cstr1;
@@ -800,6 +827,9 @@ void EwaldDipoleBigsmall::eik_dot_r()
           cstr2 += mudotk*(cs[k][0][bigi]*cs[m][2][bigi]+sn[k][0][bigi]*sn[m][2][bigi]);
           sstr2 += mudotk*(sn[k][0][bigi]*cs[m][2][bigi]-cs[k][0][bigi]*sn[m][2][bigi]);
 					bigi = bigi +1;
+#ifdef NDEBUG
+					if ( bigi == bign ) break;
+#endif
 				} 
 				assert( bigi == bign );
         sfacrl[n] = cstr1;
@@ -862,6 +892,9 @@ void EwaldDipoleBigsmall::eik_dot_r()
             cstr4 += mudotk*(cs[k][0][bigi]*clpm - sn[k][0][bigi]*slpm);
             sstr4 += mudotk*(sn[k][0][bigi]*clpm + cs[k][0][bigi]*slpm);
 						bigi = bigi +1;
+#ifdef NDEBUG
+						if ( bigi == bign ) break;
+#endif
 					} 
 					assert( bigi == bign );
           sfacrl[n] = cstr1;
@@ -899,6 +932,9 @@ void EwaldDipoleBigsmall::slabcorr()
 		if (atom->mask[i] & ibiggroupbit)  continue;
 		dipole += mu[i][2];
 		bigi = bigi +1;
+#ifdef NDEBUG
+		if ( bigi == bign ) break;
+#endif
 	} 
 	assert( bigi == bign );
   // sum local contributions to get global dipole moment
@@ -943,6 +979,9 @@ void EwaldDipoleBigsmall::slabcorr()
       torque[i][0] += ffact * dipole_all * mu[i][1];
       torque[i][1] += -ffact * dipole_all * mu[i][0];
 			bigi = bigi +1;
+#ifdef NDEBUG
+			if ( bigi == bign ) break;
+#endif
 		} 
 		assert( bigi == bign );
   }
@@ -1027,6 +1066,9 @@ void EwaldDipoleBigsmall::musum_musq()
       musum_local += mu[i][0] + mu[i][1] + mu[i][2];
       musqsum_local += mu[i][0]*mu[i][0] + mu[i][1]*mu[i][1] + mu[i][2]*mu[i][2];
 			bigi = bigi +1;
+#ifdef NDEBUG
+			if ( bigi == bign ) break;
+#endif
 		} 
 		assert( bigi == bign );
 
