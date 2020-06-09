@@ -41,12 +41,22 @@ using namespace MathSpecial;
 /* ---------------------------------------------------------------------- */
 
 EwaldDipoleBigsmall::EwaldDipoleBigsmall(LAMMPS *lmp) : Ewald(lmp),
-  tk(NULL), vc(NULL)
+  tk(NULL), vc(NULL),
+	oldx(NULL), oldmu(NULL),
+	oldF(NULL), oldT(NULL),
+delF(NULL), delT(NULL)
 {
   ewaldflag = dipoleflag = 1;
   group_group_enable = 0;
-  tk = NULL;
-  vc = NULL;
+	vc = NULL;
+	tk = NULL;
+	delF = NULL;
+	delT = NULL;
+//	ek = NULL;   // ewald.cpp
+	oldF = NULL;
+	oldT = NULL;
+	oldmu = NULL;
+	oldx = NULL;
 }
 
 /* ----------------------------------------------------------------------
@@ -131,7 +141,6 @@ void EwaldDipoleBigsmall::init()
 	if (biggroup == -1) //  
 		error->all(FLERR,"No big group");
 	biggroupbit = group->bitmask[biggroup];
-	ibiggroupbit = group->inversemask[biggroup];
 	bign = group->count(biggroup);
   // compute musum & musqsum and warn if no dipole
 
@@ -469,7 +478,7 @@ void EwaldDipoleBigsmall::compute(int eflag, int vflag)
 	int bigi = 0;
 	for (i = 0; i < nlocal; i++) {
 		// only big particle.
-		if (atom->mask[i] & ibiggroupbit)  continue;
+		if ((atom->mask[i] & biggroupbit) == 0)  continue;
     ek[bigi][0] = ek[bigi][1] = ek[bigi][2] = 0.0;
     tk[bigi][0] = tk[bigi][1] = tk[bigi][2] = 0.0;
 		bigi = bigi +1;
@@ -488,7 +497,7 @@ void EwaldDipoleBigsmall::compute(int eflag, int vflag)
 		int bigi = 0;
 		for (i = 0; i < nlocal; i++) {
 			// only big particle.
-			if (atom->mask[i] & ibiggroupbit)  continue;
+			if ((atom->mask[i] & biggroupbit) == 0)  continue;
 
       for (j = 0; j<6; j++) vcik[j] = 0.0;
 
@@ -549,7 +558,7 @@ void EwaldDipoleBigsmall::compute(int eflag, int vflag)
 	bigi = 0;
 	for (i = 0; i < nlocal; i++) {
 		// only big particle.
-		if (atom->mask[i] & ibiggroupbit)  continue;
+		if ((atom->mask[i] & biggroupbit) == 0)  continue;
     f[i][0] += muscale * ek[bigi][0];
     f[i][1] += muscale * ek[bigi][1];
     if (slabflag != 2) f[i][2] += muscale * ek[i][2];
@@ -595,7 +604,7 @@ void EwaldDipoleBigsmall::compute(int eflag, int vflag)
 			int bigi = 0;
 			for (i = 0; i < nlocal; i++) {
 				// only big particle.
-				if (atom->mask[i] & ibiggroupbit)  continue;
+				if ((atom->mask[i] & biggroupbit) == 0)  continue;
         eatom[i] -= (mu[i][0]*mu[i][0] + mu[i][1]*mu[i][1] + mu[i][2]*mu[i][2])
           *2.0*g3/3.0/MY_PIS;
         eatom[i] *= muscale;
@@ -611,7 +620,7 @@ void EwaldDipoleBigsmall::compute(int eflag, int vflag)
 			int bigi = 0;
 			for (i = 0; i < nlocal; i++) {
 				// only big particle.
-				if (atom->mask[i] & ibiggroupbit)  continue;
+				if ((atom->mask[i] & biggroupbit) == 0)  continue;
 				for (j = 0; j < 6; j++) vatom[i][j] *= muscale;
 				bigi = bigi +1;
 #ifdef NDEBUG
@@ -644,7 +653,6 @@ void EwaldDipoleBigsmall::eik_dot_r()
   int nlocal = atom->nlocal;
 	biggroup = group->find("big");
 	biggroupbit = group->bitmask[biggroup];
-	ibiggroupbit = group->inversemask[biggroup];
 	bign = group->count(biggroup);
 
   n = 0;
@@ -666,7 +674,7 @@ void EwaldDipoleBigsmall::eik_dot_r()
 			int bigi = 0;
       for (i = 0; i < nlocal; i++) {
 				// only big particle.
-				if (atom->mask[i] & ibiggroupbit)  continue;
+				if ((atom->mask[i] & biggroupbit) == 0)  continue;
         cs[0][ic][bigi] = 1.0;
         sn[0][ic][bigi] = 0.0;
         cs[1][ic][bigi] = cos(unitk[ic]*x[i][ic]);
@@ -698,7 +706,7 @@ void EwaldDipoleBigsmall::eik_dot_r()
 				int bigi = 0;
 				for (i = 0; i < nlocal; i++) {
 					// only big particle.
-					if (atom->mask[i] & ibiggroupbit)  continue;
+					if ((atom->mask[i] & biggroupbit) == 0)  continue;
 					cs[m][ic][bigi] = cs[m-1][ic][bigi]*cs[1][ic][bigi] -
             sn[m-1][ic][bigi]*sn[1][ic][bigi];
           sn[m][ic][bigi] = sn[m-1][ic][bigi]*cs[1][ic][bigi] +
@@ -733,7 +741,7 @@ void EwaldDipoleBigsmall::eik_dot_r()
 				int bigi = 0;
 				for (i = 0; i < nlocal; i++) {
 					// only big particle.
-					if (atom->mask[i] & ibiggroupbit)  continue;
+					if ((atom->mask[i] & biggroupbit) == 0)  continue;
           mux = mu[i][0];
           muy = mu[i][1];
 
@@ -773,7 +781,7 @@ void EwaldDipoleBigsmall::eik_dot_r()
 				int bigi = 0;
 				for (i = 0; i < nlocal; i++) {
 					// only big particle.
-					if (atom->mask[i] & ibiggroupbit)  continue;
+					if ((atom->mask[i] & biggroupbit) == 0)  continue;
           muy = mu[i][1];
           muz = mu[i][2];
 
@@ -813,7 +821,7 @@ void EwaldDipoleBigsmall::eik_dot_r()
 				int bigi = 0;
 				for (i = 0; i < nlocal; i++) {
 					// only big particle.
-					if (atom->mask[i] & ibiggroupbit)  continue;
+					if ((atom->mask[i] & biggroupbit) == 0)  continue;
           mux = mu[i][0];
           muz = mu[i][2];
 
@@ -859,7 +867,7 @@ void EwaldDipoleBigsmall::eik_dot_r()
 					int bigi = 0;
 					for (i = 0; i < nlocal; i++) {
 						// only big particle.
-						if (atom->mask[i] & ibiggroupbit)  continue;
+						if ((atom->mask[i] & biggroupbit) == 0)  continue;
             mux = mu[i][0];
             muy = mu[i][1];
             muz = mu[i][2];
@@ -929,7 +937,7 @@ void EwaldDipoleBigsmall::slabcorr()
 	int bigi = 0;
 	for (int i = 0; i < nlocal; i++) {
 		// only big particle.
-		if (atom->mask[i] & ibiggroupbit)  continue;
+		if ((atom->mask[i] & biggroupbit) == 0)  continue;
 		dipole += mu[i][2];
 		bigi = bigi +1;
 #ifdef NDEBUG
@@ -975,7 +983,7 @@ void EwaldDipoleBigsmall::slabcorr()
 		int bigi = 0;
 		for (int i = 0; i < nlocal; i++) {
 			// only big particle.
-			if (atom->mask[i] & ibiggroupbit)  continue;
+			if ((atom->mask[i] & biggroupbit) == 0)  continue;
       torque[i][0] += ffact * dipole_all * mu[i][1];
       torque[i][1] += -ffact * dipole_all * mu[i][0];
 			bigi = bigi +1;
@@ -1050,21 +1058,20 @@ void EwaldDipoleBigsmall::musum_musq()
 {
   const int nlocal = atom->nlocal;
 	biggroup = group->find("big");
-	biggroupbit = group->bitmask[biggroup];
-	ibiggroupbit = group->inversemask[biggroup];
+	biggroupbit = group->bitmask[biggroup] ;
 	bigint bign = group->count(biggroup);
 
   musum = musqsum = mu2 = 0.0;
-  if (atom->mu_flag) {
-    double** mu = atom->mu;
-    double musum_local(0.0), musqsum_local(0.0);
+	if (atom->mu_flag) {
+		double** mu = atom->mu;
+		double musum_local(0.0), musqsum_local(0.0);
 
 		int bigi = 0;
 		for (int i = 0; i < nlocal; i++) {
 			// only big particle.
-			if (atom->mask[i] & ibiggroupbit)  continue;
-      musum_local += mu[i][0] + mu[i][1] + mu[i][2];
-      musqsum_local += mu[i][0]*mu[i][0] + mu[i][1]*mu[i][1] + mu[i][2]*mu[i][2];
+			if ((atom->mask[i] & biggroupbit) == 0)  continue;
+			musum_local += mu[i][0] + mu[i][1] + mu[i][2];
+			musqsum_local += mu[i][0]*mu[i][0] + mu[i][1]*mu[i][1] + mu[i][2]*mu[i][2];
 			bigi = bigi +1;
 #ifdef NDEBUG
 			if ( bigi == bign ) break;
